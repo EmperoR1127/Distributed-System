@@ -1,0 +1,38 @@
+<component name="libraryTable">
+  <library name="io.jbotsim:jbotsim-all:1.2.0" type="repository">
+    <properties maven-id="io.jbotsim:jbotsim-all:1.2.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-all-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-extras-swing-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-ui-swing-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-core-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-serialization-common-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/antlr4-runtime-4.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-ui-common-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-extras-common-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-icons-1.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-all-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-extras-swing-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-ui-swing-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-core-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-serialization-common-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/antlr4-runtime-4.7.2-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-ui-common-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-extras-common-1.2.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-icons-1.2.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-all-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-extras-swing-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-ui-swing-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-core-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-serialization-common-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/antlr4-runtime-4.7.2-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-ui-common-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-extras-common-1.2.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jbotsim-icons-1.2.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
