@@ -1,27 +1,38 @@
 package blackHoleSearch;
 import io.jbotsim.core.*;
-import io.jbotsim.ui.JViewer;
 import java.util.*;
 
-public class CautiousPendulum<agentPool> extends Node {
-    private Random random = new Random();
+public class CautiousPendulum extends Node {
     private Boolean isBlackHole;
     private Boolean isExplored;
     private Boolean isTerminated;
     private ArrayList<Move> moves;
-    private final int SIZE = 8;
+    private int size;
 
-    public void onStart() {
+    public CautiousPendulum(int s) {
+        super();
+        isBlackHole = false;
+        isExplored = false;
+        isTerminated = false;
         moves = new ArrayList<>();
+        size = s;
+    }
+
+    @Override
+    public void onStart() {
         // initialize three agents at the home base
         if (getID() == 0) {
             moves.add(new Move(new Agent(AgentType.LEADER), null));
             moves.add(new Move(new Agent(AgentType.AVANGUARD), null));
             moves.add(new Move(new Agent(AgentType.RETROGUARD), null));
+            setIsExplored(true); // set the home base explored
+            setColor(Color.GREEN);
         }
     }
 
+    @Override
     public void onClock() {
+        assert(moves != null);
         // if the node is the black hole or there's no agent resides on this node, do nothing
         if (getIsBlackHole() || (moves.size() == 0)) {
             return;
@@ -79,6 +90,18 @@ public class CautiousPendulum<agentPool> extends Node {
             sendThroughLink(avanGuard, Orientation.CLOCKWISE);
             leader.addMeetRetro();
             sendThroughLink(retroGuard, Orientation.COUNTERCLOCKWISE);
+            Link clockwise = checkLink(Orientation.CLOCKWISE);
+            Node clowckwiseNeighbor = null;
+            if (clockwise != null) {
+                clowckwiseNeighbor = clockwise.getOtherEndpoint(this);
+            }
+            // send the leader to the clockwise neighbor if it is explored
+            if ((clowckwiseNeighbor != null) && (clowckwiseNeighbor.getClass() == CautiousPendulum.class)) {
+                if (((CautiousPendulum) clowckwiseNeighbor).isExplored) {
+                    sendThroughLink(leader, Orientation.CLOCKWISE);
+                }
+            }
+
         }
         else { // two agents meet at this node
             Agent leader = null;
@@ -126,6 +149,9 @@ public class CautiousPendulum<agentPool> extends Node {
 
     public void setIsExplored(Boolean explored) {
         isExplored = explored;
+        if (isExplored) {
+            setColor(Color.GREEN);
+        }
     }
 
     public Boolean getIsExplored() {
@@ -159,7 +185,7 @@ public class CautiousPendulum<agentPool> extends Node {
 
     /**
      * This method is used to get the clockwise or counter-clockwise link.
-     * @param orientation
+     * @param orientation clockwise or counter-clockwise
      * @return the clockwise or counter-clockwise link; null if the desired
      * link is missing.
      */
@@ -170,7 +196,7 @@ public class CautiousPendulum<agentPool> extends Node {
             for (Link link: links) {
                 // the link is not missing
                 if ((link.getClass() == DynamicLink.class) && (!((DynamicLink) link).getIsMissing())
-                        && (link.getOtherEndpoint(this).getID() == (getID() - 1) % SIZE)) {
+                        && (link.getOtherEndpoint(this).getID() == (getID() - 1) % size)) {
                     res = link;
                     break;
                 }
@@ -180,7 +206,7 @@ public class CautiousPendulum<agentPool> extends Node {
             for (Link link: links) {
                 // the link is not missing
                 if ((link.getClass() == DynamicLink.class) && (!((DynamicLink) link).getIsMissing())
-                        && (link.getOtherEndpoint(this).getID() == (getID() + 1) % SIZE)) {
+                        && (link.getOtherEndpoint(this).getID() == (getID() + 1) % size)) {
                     res = link;
                     break;
                 }
@@ -216,7 +242,7 @@ public class CautiousPendulum<agentPool> extends Node {
     }
 
     private void reportBlackHole(int i) {
-        System.out.println("The Black Hole resides on node" + i);
+        System.out.println("The Black Hole resides on node " + i);
     }
 
     /**
@@ -230,7 +256,7 @@ public class CautiousPendulum<agentPool> extends Node {
             isTerminated = true; // terminates the algorithm
         }
         if (agent.retroFailsToReport(getID())) { // retroGuard fails to report
-            reportBlackHole(SIZE - agent.getMeetRetro() - 1);
+            reportBlackHole(size - agent.getMeetRetro() - 1);
             isTerminated = true;
         }
     }
