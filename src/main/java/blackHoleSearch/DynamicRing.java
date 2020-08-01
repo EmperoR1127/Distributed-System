@@ -6,6 +6,7 @@ import io.jbotsim.core.Node;
 import io.jbotsim.core.Topology;
 import io.jbotsim.ui.JViewer;
 
+import java.util.List;
 import java.util.Random;
 
 public class DynamicRing extends Topology {
@@ -40,7 +41,6 @@ public class DynamicRing extends Topology {
         //Node blackHole = getNodes().get(1);
         if (blackHole.getClass() == CautiousPendulum.class) {
             ((CautiousPendulum) blackHole).setBlackHole(true);
-            blackHole.setColor(Color.BLACK);
         }
     }
 
@@ -51,6 +51,7 @@ public class DynamicRing extends Topology {
                 if (((CautiousPendulum) node).getIsTerminated()) {
                     System.out.println(report());
                     pause(); // find the black hole
+                    return;
                 }
             }
         }
@@ -72,13 +73,19 @@ public class DynamicRing extends Topology {
         prev.setColor(Color.BLACK);
         // begin a round
         addRound();
+        System.out.println("Round " + getRound() + " begins");
         // select a link randomly and set it missing
         int missing = random.nextInt(ringSize);
+        //int missing = 0;
         Link link = getLinks().get(missing);
         if (link.getClass() == DynamicLink.class) {
             ((DynamicLink) link).setIsMissing(true);
         }
         link.setColor(Color.RED);
+        // report the missing link
+        List<Node> nodes = link.endpoints();
+        System.out.println("Link between node " + nodes.get(0).getID() + " and node "
+                           + nodes.get(1).getID() + " is missing.");
         prevMissing = missing;
     }
 
@@ -90,7 +97,6 @@ public class DynamicRing extends Topology {
         return round;
     }
 
-    //TODO, write the report function
     private String report() {
         int r = getRound();
         String end = " rounds";
@@ -102,8 +108,9 @@ public class DynamicRing extends Topology {
 
     public static void main(String[] args) {
         DynamicRing ring = new DynamicRing(8);
+        ring.setScheduler(new DynamicScheduler());
         ring.setTimeUnit(2000);
         new JViewer(ring);
-        ring.start();
+        ring.step();
     }
 }

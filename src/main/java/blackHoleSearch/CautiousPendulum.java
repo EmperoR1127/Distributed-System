@@ -6,15 +6,18 @@ public class CautiousPendulum extends Node {
     private Boolean isBlackHole;
     private Boolean isExplored;
     private Boolean isTerminated;
-    private ArrayList<Move> moves;
+    private ArrayList<Move> begin; // moves at the beginning of each round
     private int size;
+    private Move leaderMove = null;
+    private Move avanGuardMove = null;
+    private Move retroGuardMove = null;
 
     public CautiousPendulum(int s) {
         super();
         isBlackHole = false;
         isExplored = false;
         isTerminated = false;
-        moves = new ArrayList<>();
+        begin = new ArrayList<>();
         size = s;
     }
 
@@ -22,129 +25,137 @@ public class CautiousPendulum extends Node {
     public void onStart() {
         // initialize three agents at the home base
         if (getID() == 0) {
-            moves.add(new Move(new Agent(AgentType.LEADER), null));
-            moves.add(new Move(new Agent(AgentType.AVANGUARD), null));
-            moves.add(new Move(new Agent(AgentType.RETROGUARD), null));
+            begin.add(new Move(new Agent(AgentType.LEADER), null));
+            begin.add(new Move(new Agent(AgentType.AVANGUARD), null));
+            begin.add(new Move(new Agent(AgentType.RETROGUARD), null));
             setIsExplored(true); // set the home base explored
-            setColor(Color.GREEN);
         }
     }
 
     @Override
-    public void onClock() {
-        assert(moves != null);
-        // if the node is the black hole or there's no agent resides on this node, do nothing
-        if (getIsBlackHole() || (moves.size() == 0)) {
-            return;
-        }
-        else if (moves.size() == 1) { // only one agent resides on this node
-            Move move = moves.get(0);
-            Agent agent = move.getAgent();
-            if (agent.getType() == AgentType.AVANGUARD) { // avanGuard resides at the node
-                // the node is unvisited if the avanGuard resides at this node alone
-                setIsExplored(true);
-                sendThroughLink(agent, Orientation.COUNTERCLOCKWISE);
+    public void onPreClock() {
+        // check which agent resides on the node
+        for (Move move: begin) {
+            if (move.getAgent().getType() == AgentType.AVANGUARD) { // avanGuard resides at the node
+                avanGuardMove = move;
+                System.out.println("The avanGuard resides on node " + getID());
             }
-            else if (agent.getType() == AgentType.RETROGUARD) { // retroGuard resides at the node
-                if (!getIsExplored()) { // an unexplored node
-                    setIsExplored(true);
-                    sendThroughLink(agent, Orientation.CLOCKWISE);
-                }
-                else { // an explored node, do not need to change orientation
-                    sendThroughLink(agent, move.getOrientation());
-                }
+            else if (move.getAgent().getType() == AgentType.RETROGUARD) { // retroGuard resides at the node
+                retroGuardMove = move;
+                System.out.println("The retroGuard resides on node " + getID());
             }
             else { // leader resides at the node
-                if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
-                    agent.addAvanCounter();
-                }
-                else { // clockwise link is missing
-                    agent.addRetroCounter();
-                }
-                reportBlackHole(agent);
+                leaderMove = move;
+                System.out.println("The leader resides on node " + getID());
+                System.out.println("Meet retroGuard " + leaderMove.getAgent().getMeetRetro() + " times");
+                System.out.println("retroCounter is " + leaderMove.getAgent().getRetroCounter());
             }
         }
-        else if (moves.size() == 3) { // three agents meet at this node
-            Agent leader = null;
-            Agent avanGuard = null;
-            Agent retroGuard = null;
-            for (Move m: moves) {
-                Agent a = m.getAgent();
-                if (a.getType() == AgentType.LEADER) {
-                    leader = a;
-                }
-                else if (a.getType() == AgentType.AVANGUARD) {
-                    avanGuard = a;
-                }
-                else {
-                    retroGuard = a;
-                }
-            }
-            assert(leader != null);
-            assert(avanGuard != null);
-            assert(retroGuard != null);
-            // do not need to check the availability of the clockwise link
-            // since sendThroughLink has no effect when the link is missing
-            leader.resetAvanCounter();
-            leader.addAvanCounter();
-            sendThroughLink(avanGuard, Orientation.CLOCKWISE);
-            leader.addMeetRetro();
-            sendThroughLink(retroGuard, Orientation.COUNTERCLOCKWISE);
-            Link clockwise = checkLink(Orientation.CLOCKWISE);
-            Node clowckwiseNeighbor = null;
-            if (clockwise != null) {
-                clowckwiseNeighbor = clockwise.getOtherEndpoint(this);
-            }
-            // send the leader to the clockwise neighbor if it is explored
-            if ((clowckwiseNeighbor != null) && (clowckwiseNeighbor.getClass() == CautiousPendulum.class)) {
-                if (((CautiousPendulum) clowckwiseNeighbor).isExplored) {
-                    sendThroughLink(leader, Orientation.CLOCKWISE);
-                }
-            }
+    }
 
+    public void onClock() {
+        // the node is the black hole or there's no agent resides on this node
+        if (getIsBlackHole() || (leaderMove == null && avanGuardMove == null && retroGuardMove == null)) {
+            // do nothing
         }
-        else { // two agents meet at this node
-            Agent leader = null;
-            Agent avanGuard = null;
-            Agent retroGuard = null;
-            for (Move m: moves) {
-                Agent a = m.getAgent();
-                if (a.getType() == AgentType.LEADER) {
-                    leader = a;
-                }
-                else if (a.getType() == AgentType.AVANGUARD) {
-                    avanGuard = a;
-                }
-                else {
-                    retroGuard = a;
-                }
+        // avanGuard resides on the node alone
+        else if (leaderMove == null && avanGuardMove != null && retroGuardMove == null) {
+            setIsExplored(true);
+            sendThroughLink(avanGuardMove.getAgent(), Orientation.COUNTERCLOCKWISE);
+        }
+        // retroGuard resides on the node alone
+        else if (leaderMove == null && avanGuardMove == null && retroGuardMove != null) {
+            if (!getIsExplored()) { // an unexplored node
+                setIsExplored(true);
+                sendThroughLink(retroGuardMove.getAgent(), Orientation.CLOCKWISE);
+
             }
-            assert(leader != null); // one of them must be the leader
-            if (avanGuard != null && retroGuard == null) { // leader and avanGuard meet
-                leader.resetAvanCounter();
-                if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
-                    leader.addAvanCounter();
-                    sendThroughLink(avanGuard, Orientation.CLOCKWISE);
-                }
-                else { // clockwise link is missing
-                    leader.addRetroCounter();
-                    reportBlackHole(leader);
-                }
-            }
-            else { // leader and retroGuard meet
-                assert(avanGuard == null && retroGuard != null);
-                leader.addMeetRetro();
-                leader.resetRetroCounter();
-                if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
-                    leader.addAvanCounter();
-                    reportBlackHole(leader);
-                }
-                if (!isLinkMissing(Orientation.COUNTERCLOCKWISE)) {// counter-clockwise link is not missing
-                    leader.addRetroCounter();
-                    sendThroughLink(retroGuard, Orientation.COUNTERCLOCKWISE);
-                }
+            else { // an explored node, do not need to change orientation
+                sendThroughLink(retroGuardMove.getAgent(), retroGuardMove.getOrientation());
             }
         }
+        // leader resides on the node alone
+        else if (leaderMove != null && avanGuardMove == null && retroGuardMove == null) {
+            if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
+                leaderMove.getAgent().addAvanCounter();
+            }
+            else { // clockwise link is missing
+                leaderMove.getAgent().addRetroCounter();
+            }
+            reportBlackHole(leaderMove.getAgent());
+        }
+        // leader and avanGuard reside on the node together
+        else if (leaderMove != null && avanGuardMove != null && retroGuardMove == null) {
+            Agent leader = leaderMove.getAgent();
+            Agent avanGuard = avanGuardMove.getAgent();
+            leader.resetAvanCounter();
+            if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
+                leader.addAvanCounter();
+                sendThroughLink(avanGuard, Orientation.CLOCKWISE);
+                Link clockwise = checkLink(Orientation.CLOCKWISE);
+                assert(clockwise != null);
+                Node clowckwiseNeighbor = clockwise.getOtherEndpoint(this);
+                // send the leader to the clockwise neighbor if it is explored
+                if (clowckwiseNeighbor.getClass() == CautiousPendulum.class) {
+                    if (((CautiousPendulum) clowckwiseNeighbor).getIsExplored()) {
+                        sendThroughLink(leader, Orientation.CLOCKWISE);
+                    }
+                }
+            }
+            else { // clockwise link is missing
+                leader.addRetroCounter();
+                reportBlackHole(leader);
+            }
+        }
+        // leader and retroGuard reside on the node together
+        else if (leaderMove != null && avanGuardMove == null && retroGuardMove != null) {
+            Agent leader = leaderMove.getAgent();
+            Agent retroGuard = retroGuardMove.getAgent();
+            leader.addMeetRetro();
+            leader.resetRetroCounter();
+            if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
+                leader.addAvanCounter();
+                reportBlackHole(leader);
+            }
+            if (!isLinkMissing(Orientation.COUNTERCLOCKWISE)) {// counter-clockwise link is not missing
+                leader.addRetroCounter();
+                sendThroughLink(retroGuard, Orientation.COUNTERCLOCKWISE);
+            }
+        }
+        else { // all the three agents reside on the node together
+            assert(leaderMove != null);
+            assert(avanGuardMove != null);
+            assert(retroGuardMove != null);
+            Agent leader = leaderMove.getAgent();
+            Agent avanGuard = avanGuardMove.getAgent();
+            Agent retroGuard = retroGuardMove.getAgent();
+            leader.addAvanCounter();
+            leader.resetAvanCounter();
+            leader.addMeetRetro();
+            leader.resetRetroCounter();
+            if (!isLinkMissing(Orientation.CLOCKWISE)) { // clockwise link is not missing
+                sendThroughLink(avanGuard, Orientation.CLOCKWISE);
+                Link clockwise = checkLink(Orientation.CLOCKWISE);
+                assert(clockwise != null);
+                Node clowckwiseNeighbor = clockwise.getOtherEndpoint(this);
+                // send the leader to the clockwise neighbor if it is explored
+                if (clowckwiseNeighbor.getClass() == CautiousPendulum.class) {
+                    if (((CautiousPendulum) clowckwiseNeighbor).getIsExplored()) {
+                        sendThroughLink(leader, Orientation.CLOCKWISE);
+                    }
+                }
+            }
+            else { // clockwise link is missing
+                leader.addRetroCounter();
+            }
+            sendThroughLink(retroGuard, Orientation.COUNTERCLOCKWISE);
+        }
+    }
+
+    public void onPostClock() {
+        leaderMove = null;
+        avanGuardMove = null;
+        retroGuardMove = null;
     }
 
     public void setIsExplored(Boolean explored) {
@@ -160,6 +171,9 @@ public class CautiousPendulum extends Node {
 
     public void setBlackHole(Boolean blackHole) {
         isBlackHole = blackHole;
+        if (isBlackHole) {
+            setColor(Color.BLACK);
+        }
     }
 
     public Boolean getIsBlackHole() {
@@ -170,8 +184,8 @@ public class CautiousPendulum extends Node {
         return isTerminated;
     }
 
-    public ArrayList<Move> getMoves() {
-        return moves;
+    public ArrayList<Move> getBegin() {
+        return begin;
     }
 
     /**
@@ -196,7 +210,7 @@ public class CautiousPendulum extends Node {
             for (Link link: links) {
                 // the link is not missing
                 if ((link.getClass() == DynamicLink.class) && (!((DynamicLink) link).getIsMissing())
-                        && (link.getOtherEndpoint(this).getID() == (getID() - 1) % size)) {
+                        && (link.getOtherEndpoint(this).getID() == (getID() + size - 1) % size)) {
                     res = link;
                     break;
                 }
@@ -229,15 +243,15 @@ public class CautiousPendulum extends Node {
         Node node = link.getOtherEndpoint(this);
         // ready to send the agent
         agent.addNumOfMoves();
-        for (Move m: moves) { // delete this agent in this node
-            if (m.getAgent() == agent) {
-                moves.remove(m);
+        for (Move m: begin) { // delete this agent in this node
+            if (m.getAgent().equals(agent)) {
+                begin.remove(m);
                 break;
             }
         }
         // add a move to the destination
         if (node.getClass() == CautiousPendulum.class) {
-            ((CautiousPendulum) node).getMoves().add(new Move(agent, orientation));
+            ((CautiousPendulum) node).getBegin().add(new Move(agent, orientation));
         }
     }
 

@@ -72,15 +72,24 @@ public class Agent {
     public int getMeetRetro() {
         return meetRetro;
     }
+
+    public int getRetroCounter() { return retroCounter;}
     /**
      * This method is used to check whether the avanGuard fails to report.
      * @return Boolean true if the avanGuard fails to report; false otherwise.
      */
     public Boolean avanFailsToReport() {
-        return avanCounter > 1;
+        return avanCounter > 2;
     }
 
     public  Boolean retroFailsToReport(int i) {
         return 2 * (meetRetro + i + 1) < retroCounter;
+    }
+
+    public Boolean equals(Agent other) {
+        if (this == other) {
+            return true;
+        }
+        return getType() == other.getType();
     }
 }
