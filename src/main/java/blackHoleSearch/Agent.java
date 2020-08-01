@@ -20,35 +20,67 @@ public class Agent {
         return type;
     }
 
+    /**
+     * This method is used to get the total number of move made by this node.
+     * @return int total number of moves made by this node.
+     */
     public int getNumOfMoves() {
         return numOfMoves;
     }
 
+    /**
+     * This method is used to add one move to the total number of moves made by this node.
+     * @return void
+     */
     public void addNumOfMoves() {
-        this.numOfMoves += 1;
+        numOfMoves += 1;
     }
 
     public void addAvanCounter() {
-        this.avanCounter += 1;
+        avanCounter += 1;
     }
 
     public void resetAvanCounter() {
-        this.avanCounter = 0;
+        avanCounter = 0;
     }
-
+    /**
+    * This method is used to add one to the counter which keeps the number of time units
+     * collapse since the leader and retroGuard meet.
+     * @return void
+     */
     public void addRetroCounter() {
-        this.retroCounter += 1;
+        retroCounter += 1;
     }
 
+    /**
+     * This method is used to reset the counter which keeps the number of time units collapse
+     * since the leader and retroGuard meet.
+     * @return void
+     */
     public void resetRetroCounter() {
-        this.retroCounter = 0;
+        retroCounter = 0;
     }
-
+    /**
+     * This method is used to add one to the number of meetings between the leader
+     * and the retroGuard.
+     * @return void
+     */
     public void addMeetRetro() {
-        this.meetRetro += 1;
+        meetRetro += 1;
     }
 
+    public int getMeetRetro() {
+        return meetRetro;
+    }
+    /**
+     * This method is used to check whether the avanGuard fails to report.
+     * @return Boolean true if the avanGuard fails to report; false otherwise.
+     */
     public Boolean avanFailsToReport() {
-        return this.avanCounter == 2;
+        return avanCounter > 1;
+    }
+
+    public  Boolean retroFailsToReport(int i) {
+        return 2 * (meetRetro + i + 1) < retroCounter;
     }
 }
