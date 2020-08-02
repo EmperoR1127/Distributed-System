@@ -22,17 +22,6 @@ public class CautiousPendulum extends Node {
     }
 
     @Override
-    public void onStart() {
-        // initialize three agents at the home base
-        if (getID() == 0) {
-            begin.add(new Move(new Agent(AgentType.LEADER), null));
-            begin.add(new Move(new Agent(AgentType.AVANGUARD), null));
-            begin.add(new Move(new Agent(AgentType.RETROGUARD), null));
-            setIsExplored(true); // set the home base explored
-        }
-    }
-
-    @Override
     public void onPreClock() {
         // check which agent resides on the node
         for (Move move: begin) {
@@ -48,11 +37,12 @@ public class CautiousPendulum extends Node {
                 leaderMove = move;
                 System.out.println("The leader resides on node " + getID());
                 System.out.println("Meet retroGuard " + leaderMove.getAgent().getMeetRetro() + " times");
-                System.out.println("retroCounter is " + leaderMove.getAgent().getRetroCounter());
+                //System.out.println("retroCounter is " + leaderMove.getAgent().getRetroCounter());
             }
         }
     }
 
+    @Override
     public void onClock() {
         // the node is the black hole or there's no agent resides on this node
         if (getIsBlackHole() || (leaderMove == null && avanGuardMove == null && retroGuardMove == null)) {
@@ -160,7 +150,7 @@ public class CautiousPendulum extends Node {
 
     public void setIsExplored(Boolean explored) {
         isExplored = explored;
-        if (isExplored) {
+        if (isExplored) { // set the explored node with color green
             setColor(Color.GREEN);
         }
     }
@@ -171,7 +161,7 @@ public class CautiousPendulum extends Node {
 
     public void setBlackHole(Boolean blackHole) {
         isBlackHole = blackHole;
-        if (isBlackHole) {
+        if (isBlackHole) { // set the black hole with color black
             setColor(Color.BLACK);
         }
     }

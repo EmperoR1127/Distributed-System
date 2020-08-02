@@ -17,17 +17,31 @@ public class DynamicRing extends Topology {
     private int ringSize;
     private int prevMissing;
     private int round;
+    private Agent leader;
+    private Agent avanGuard;
+    private Agent retroGuard;
 
     public DynamicRing(int size) {
         super();
         random = new Random();
         ringSize = size;
+        leader = new Agent(AgentType.LEADER);
+        avanGuard = new Agent(AgentType.AVANGUARD);
+        retroGuard = new Agent(AgentType.RETROGUARD);
         // add nodes to the topology
         for (int i = 0; i < ringSize; i++) {
             CautiousPendulum node = new CautiousPendulum(ringSize);
             double angle = 90 - (2 * Math.PI * i) / ringSize;
             node.setID(i);
-            node.setColor(Color.YELLOW);
+            if (i == 0) { // initialize three agents at the home base
+                node.getBegin().add(new Move(leader, null));
+                node.getBegin().add(new Move(avanGuard, null));
+                node.getBegin().add(new Move(retroGuard, null));
+                node.setIsExplored(true);
+            }
+            else { // set unexplored nodes yellow
+                node.setColor(Color.YELLOW);
+            }
             // y-axis in java is different as in real world
             addNode(BASEX + PARAMETER * Math.cos(angle), BASEY - PARAMETER * Math.sin(angle), node);
         }
@@ -38,7 +52,6 @@ public class DynamicRing extends Topology {
 
         // set the black hole randomly
         Node blackHole = getNodes().get(random.nextInt(ringSize - 1) + 1);
-        //Node blackHole = getNodes().get(1);
         if (blackHole.getClass() == CautiousPendulum.class) {
             ((CautiousPendulum) blackHole).setBlackHole(true);
         }
@@ -76,7 +89,6 @@ public class DynamicRing extends Topology {
         System.out.println("Round " + getRound() + " begins");
         // select a link randomly and set it missing
         int missing = random.nextInt(ringSize);
-        //int missing = 0;
         Link link = getLinks().get(missing);
         if (link.getClass() == DynamicLink.class) {
             ((DynamicLink) link).setIsMissing(true);
@@ -97,13 +109,17 @@ public class DynamicRing extends Topology {
         return round;
     }
 
+    private int getNumOfMoves() {
+        return leader.getNumOfMoves() + avanGuard.getNumOfMoves() + retroGuard.getNumOfMoves();
+    }
+
     private String report() {
         int r = getRound();
         String end = " rounds";
         if (r == 1) {
             end = " round";
         }
-        return "The algorithm terminates in " + r + end;
+        return "The algorithm terminates in " + r + end + " with " + getNumOfMoves() + " moves.";
     }
 
     public static void main(String[] args) {
