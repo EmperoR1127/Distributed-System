@@ -5,7 +5,6 @@ import io.jbotsim.core.Link;
 import io.jbotsim.core.Node;
 import io.jbotsim.core.Topology;
 import io.jbotsim.ui.JViewer;
-
 import java.util.List;
 import java.util.Random;
 
@@ -13,7 +12,6 @@ public class DynamicRing extends Topology {
     private final int BASEX = 500;
     private final int BASEY = 500;
     private final int PARAMETER = 300;
-    private final int HOMEBASE = 0;
     private Random random;
     private int ringSize;
     private int prevMissing;
@@ -72,7 +70,8 @@ public class DynamicRing extends Topology {
      */
     private void setHomeBase() {
         for (Node node: getNodes()) {
-            if ((node.getID() == HOMEBASE) && (node.getClass() == CautiousPendulum.class)) {
+            // node 0 is the home base
+            if ((node.getID() == 0) && (node.getClass() == CautiousPendulum.class)) {
                 ((CautiousPendulum) node).getBegin().add(new Move(leader, null));
                 ((CautiousPendulum) node).getBegin().add(new Move(avanGuard, null));
                 ((CautiousPendulum) node).getBegin().add(new Move(retroGuard, null));
@@ -138,7 +137,7 @@ public class DynamicRing extends Topology {
     public static void main(String[] args) {
         DynamicRing ring = new DynamicRing(16);
         ring.setScheduler(new DynamicScheduler());
-        ring.setTimeUnit(2000);
+        ring.setTimeUnit(500);
         new JViewer(ring);
         ring.step();
     }
